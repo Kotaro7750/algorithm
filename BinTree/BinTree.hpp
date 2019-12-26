@@ -1,5 +1,7 @@
 #include <iostream>
 
+enum ChildDirection { LEFT, RIGHT };
+
 template <typename T> struct BinTreeNode {
   T data;
   struct BinTreeNode<T> *LHS;
@@ -19,6 +21,9 @@ private:
   struct BinTreeNode<T> *root;
   BinTreeNode<T> *searchNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
+  void eraseNode(struct BinTreeNode<T> *node, struct BinTreeNode<T> *parent,
+                 ChildDirection Child);
+  struct BinTreeNode<T> *LeftMaxParent(struct BinTreeNode<T> *node);
   void printRec(struct BinTreeNode<T> *node);
 };
 
@@ -96,7 +101,6 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
   return BinTree<T>::searchParentNode(searchNode, data);
 }
 
-// bug
 template <typename T> bool BinTree<T>::erase(T data) {
   struct BinTreeNode<T> *parentNode = searchParentNode(root, data);
   struct BinTreeNode<T> *deleteNode;
@@ -105,16 +109,64 @@ template <typename T> bool BinTree<T>::erase(T data) {
     return false;
   }
 
-  if (parentNode->LHS->data == data) {
+  std::cout << parentNode->data << std::endl;
+
+  if (parentNode->LHS != nullptr && parentNode->LHS->data == data) {
     deleteNode = parentNode->LHS;
-    parentNode->LHS == nullptr;
-  } else {
+    std::cout << "deleteNode is " << deleteNode->data << std::endl;
+    eraseNode(deleteNode, parentNode, LEFT);
+  } else if (parentNode->RHS != nullptr && parentNode->RHS->data == data) {
     deleteNode = parentNode->RHS;
-    parentNode->RHS == nullptr;
+    std::cout << "deleteNode is " << deleteNode->data << std::endl;
+    eraseNode(deleteNode, parentNode, RIGHT);
   }
 
-  delete deleteNode;
   return true;
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::LeftMaxParent(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *tmp = node->LHS;
+  while (tmp->RHS != nullptr) {
+    if (tmp->RHS->RHS == nullptr) {
+      break;
+    }
+    tmp = tmp->RHS;
+  }
+  return tmp;
+}
+
+template <typename T>
+void BinTree<T>::eraseNode(struct BinTreeNode<T> *node,
+                           struct BinTreeNode<T> *parent,
+                           ChildDirection Child) {
+  if (node->LHS == nullptr && node->RHS == nullptr) {
+    if (Child == LEFT) {
+      parent->LHS = nullptr;
+    } else {
+      parent->RHS = nullptr;
+    }
+    delete node;
+  } else if (node->LHS == nullptr) {
+    if (Child == LEFT) {
+      parent->LHS = node->RHS;
+    } else {
+      parent->RHS = node->RHS;
+    }
+    delete node;
+  } else if (node->RHS == nullptr) {
+    if (Child == LEFT) {
+      parent->LHS = node->LHS;
+    } else {
+      parent->RHS = node->LHS;
+    }
+    delete node;
+  } else {
+    struct BinTreeNode<T> *leftMaxParent = LeftMaxParent(node);
+    node->data = leftMaxParent->RHS->data;
+    delete leftMaxParent->RHS;
+    leftMaxParent->RHS = nullptr;
+  }
 }
 
 template <typename T> void BinTree<T>::print() {

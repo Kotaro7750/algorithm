@@ -3,7 +3,7 @@
 
 int main(int argc, char const *argv[]) {
   BinTree<int> bt(1);
-  if (bt.append(2) == false) {
+  if (bt.append(6) == false) {
     std::cout << "append failed" << std::endl;
   }
 
@@ -11,11 +11,22 @@ int main(int argc, char const *argv[]) {
     std::cout << "append failed" << std::endl;
   }
 
-  if (bt.append(5) == false) {
+  if (bt.append(3) == false) {
+    std::cout << "append failed" << std::endl;
+  }
+  if (bt.append(7) == false) {
+    std::cout << "append failed" << std::endl;
+  }
+
+  if (bt.append(2) == false) {
     std::cout << "append failed" << std::endl;
   }
 
   if (bt.append(4) == false) {
+    std::cout << "append failed" << std::endl;
+  }
+
+  if (bt.append(5) == false) {
     std::cout << "append failed" << std::endl;
   }
 
@@ -24,6 +35,16 @@ int main(int argc, char const *argv[]) {
   }
 
   bt.search(5);
+  bt.print();
+
+  if (bt.erase(6) == false) {
+    std::cout << "erase failed" << std::endl;
+  }
+
+  if (bt.erase(-1) == false) {
+    std::cout << "erase failed" << std::endl;
+  }
+
   bt.print();
 
   return 0;
