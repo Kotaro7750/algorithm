@@ -21,8 +21,7 @@ private:
   struct BinTreeNode<T> *root;
   BinTreeNode<T> *searchNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
-  void eraseNode(struct BinTreeNode<T> *node, struct BinTreeNode<T> *parent,
-                 ChildDirection Child);
+  BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *LeftMaxParent(struct BinTreeNode<T> *node);
   void printRec(struct BinTreeNode<T> *node);
 };
@@ -95,6 +94,7 @@ template <typename T>
 BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
                                              T data) {
   struct BinTreeNode<T> *searchNode = data < node->data ? node->LHS : node->RHS;
+
   if (searchNode == nullptr || searchNode->data == data) {
     return node;
   }
@@ -104,24 +104,70 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
 template <typename T> bool BinTree<T>::erase(T data) {
   struct BinTreeNode<T> *parentNode = searchParentNode(root, data);
   struct BinTreeNode<T> *deleteNode;
+  struct BinTreeNode<T> *junctionNode;
+
+  if (root->data == data) {
+    deleteNode = root;
+    junctionNode = eraseNode(deleteNode);
+    root = junctionNode;
+
+    return true;
+  }
 
   if (parentNode == nullptr) {
     return false;
   }
 
-  std::cout << parentNode->data << std::endl;
-
   if (parentNode->LHS != nullptr && parentNode->LHS->data == data) {
     deleteNode = parentNode->LHS;
-    std::cout << "deleteNode is " << deleteNode->data << std::endl;
-    eraseNode(deleteNode, parentNode, LEFT);
+    junctionNode = eraseNode(deleteNode);
+    parentNode->LHS = junctionNode;
+
   } else if (parentNode->RHS != nullptr && parentNode->RHS->data == data) {
     deleteNode = parentNode->RHS;
-    std::cout << "deleteNode is " << deleteNode->data << std::endl;
-    eraseNode(deleteNode, parentNode, RIGHT);
+    junctionNode = eraseNode(deleteNode);
+    parentNode->RHS = junctionNode;
   }
 
   return true;
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *ret;
+  struct BinTreeNode<T> *deleteNode;
+
+  if (node->LHS == nullptr && node->RHS == nullptr) {
+    ret = nullptr;
+    deleteNode = node;
+
+  } else if (node->LHS == nullptr) {
+    ret = node->RHS;
+    deleteNode = node;
+
+  } else if (node->RHS == nullptr) {
+    ret = node->LHS;
+    deleteNode = node;
+
+  } else {
+    struct BinTreeNode<T> *leftMaxParent = LeftMaxParent(node);
+
+    // when erase root,root->LHS will be root
+    if (leftMaxParent == root->LHS) {
+      root->LHS->RHS = root->RHS;
+      ret = root->LHS;
+      deleteNode = root;
+
+    } else {
+      node->data = leftMaxParent->RHS->data;
+      deleteNode = leftMaxParent->RHS;
+      leftMaxParent->RHS = nullptr;
+      ret = node;
+    }
+  }
+
+  delete deleteNode;
+  return ret;
 }
 
 template <typename T>
@@ -137,39 +183,7 @@ struct BinTreeNode<T> *BinTree<T>::LeftMaxParent(struct BinTreeNode<T> *node) {
 }
 
 template <typename T>
-void BinTree<T>::eraseNode(struct BinTreeNode<T> *node,
-                           struct BinTreeNode<T> *parent,
-                           ChildDirection Child) {
-  if (node->LHS == nullptr && node->RHS == nullptr) {
-    if (Child == LEFT) {
-      parent->LHS = nullptr;
-    } else {
-      parent->RHS = nullptr;
-    }
-    delete node;
-  } else if (node->LHS == nullptr) {
-    if (Child == LEFT) {
-      parent->LHS = node->RHS;
-    } else {
-      parent->RHS = node->RHS;
-    }
-    delete node;
-  } else if (node->RHS == nullptr) {
-    if (Child == LEFT) {
-      parent->LHS = node->LHS;
-    } else {
-      parent->RHS = node->LHS;
-    }
-    delete node;
-  } else {
-    struct BinTreeNode<T> *leftMaxParent = LeftMaxParent(node);
-    node->data = leftMaxParent->RHS->data;
-    delete leftMaxParent->RHS;
-    leftMaxParent->RHS = nullptr;
-  }
-}
-
-template <typename T> void BinTree<T>::print() {
+void BinTree<T>::print() {
   printRec(root);
   std::cout << std::endl;
 }
