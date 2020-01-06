@@ -16,6 +16,7 @@ public:
   bool append(T data);
   bool erase(T data);
   void print();
+  void RotateTest(T data);
 
 private:
   struct BinTreeNode<T> *root;
@@ -23,6 +24,8 @@ private:
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *LeftMaxParent(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateRight(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateLeft(struct BinTreeNode<T> *node);
   void printRec(struct BinTreeNode<T> *node);
 };
 
@@ -42,6 +45,7 @@ template <typename T> inline BinTreeNode<T> *BinTree<T>::getRoot() {
 
 template <typename T> bool BinTree<T>::search(T data) {
   struct BinTreeNode<T> *result = searchNode(root, data);
+
   if (result == nullptr) {
     return false;
   }
@@ -180,6 +184,50 @@ struct BinTreeNode<T> *BinTree<T>::LeftMaxParent(struct BinTreeNode<T> *node) {
     tmp = tmp->RHS;
   }
   return tmp;
+}
+
+template <typename T>
+void BinTree<T>::RotateTest(T data) {
+  struct BinTreeNode<T> *parent = searchParentNode(root, data);
+  struct BinTreeNode<T> *junctionNode;
+
+  if (parent->LHS != nullptr && parent->LHS->data == data) {
+    junctionNode = RotateRight(parent->LHS);
+    parent->LHS = junctionNode;
+  } else if (parent->RHS != nullptr && parent->RHS->data == data) {
+    junctionNode = RotateRight(parent->RHS);
+    parent->RHS = junctionNode;
+  }
+
+  return;
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::RotateRight(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *X = node->LHS->LHS;
+  struct BinTreeNode<T> *Y = node->LHS->RHS;
+  struct BinTreeNode<T> *Z = node->RHS;
+
+  struct BinTreeNode<T> *partitionRoot = node->LHS;
+
+  node->LHS = Y;
+  partitionRoot->RHS = node;
+
+  return partitionRoot;
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::RotateLeft(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *X = node->LHS;
+  struct BinTreeNode<T> *Y = node->RHS->LHS;
+  struct BinTreeNode<T> *Z = node->RHS;
+
+  struct BinTreeNode<T> *partitionRoot = node->RHS;
+
+  node->RHS = Y;
+  partitionRoot->LHS = node;
+
+  return partitionRoot;
 }
 
 template <typename T>
