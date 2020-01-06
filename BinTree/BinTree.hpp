@@ -43,6 +43,9 @@ template <typename T> inline BinTreeNode<T> *BinTree<T>::getRoot() {
   return root;
 }
 
+//--------------------
+// search
+//--------------------
 template <typename T> bool BinTree<T>::search(T data) {
   struct BinTreeNode<T> *result = searchNode(root, data);
 
@@ -66,6 +69,9 @@ BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
   return BinTree<T>::searchNode(searchNode, data);
 }
 
+//--------------------
+// append
+//--------------------
 template <typename T> bool BinTree<T>::append(T data) {
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
 
@@ -105,6 +111,9 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
   return BinTree<T>::searchParentNode(searchNode, data);
 }
 
+//--------------------
+// erase
+//--------------------
 template <typename T> bool BinTree<T>::erase(T data) {
   struct BinTreeNode<T> *parentNode = searchParentNode(root, data);
   struct BinTreeNode<T> *deleteNode;
@@ -186,6 +195,9 @@ struct BinTreeNode<T> *BinTree<T>::LeftMaxParent(struct BinTreeNode<T> *node) {
   return tmp;
 }
 
+//--------------------
+// rotate
+//--------------------
 template <typename T>
 void BinTree<T>::RotateTest(T data) {
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
@@ -230,6 +242,9 @@ struct BinTreeNode<T> *BinTree<T>::RotateLeft(struct BinTreeNode<T> *node) {
   return partitionRoot;
 }
 
+//--------------------
+// debug
+//--------------------
 template <typename T>
 void BinTree<T>::print() {
   printRec(root);
