@@ -1,19 +1,29 @@
+#include "../BenchMark/BenchMark.hpp"
 #include "BinTree.hpp"
+#include <chrono>
 #include <iostream>
+#include <random>
+
+#define MAX 1000000
 
 int main(int argc, char const *argv[]) {
   BinTree<int> bt(1);
-  bt.append(6);
-  bt.append(0);
-  bt.append(5);
-  bt.append(7);
+  BenchMark bm;
 
-  bt.search(5);
-  bt.print();
+  std::random_device rand;
 
-  bt.RotateTest(6);
+  int search;
+  bm.Start();
+  for (int i = 0; i < MAX; i++) {
+    search = rand();
+    bt.append(search);
+  }
+  bt.append(1);
+  long appendT = bm.Lap();
 
-  bt.print();
+  std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
+
+  bt.search(search);
 
   return 0;
 }

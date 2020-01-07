@@ -74,6 +74,9 @@ BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
 //--------------------
 template <typename T> bool BinTree<T>::append(T data) {
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
+  if (parent->data == data) {
+    return false;
+  }
 
   if (data < parent->data) {
     if (parent->LHS != nullptr) {
@@ -103,12 +106,19 @@ template <typename T> bool BinTree<T>::append(T data) {
 template <typename T>
 BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
                                              T data) {
-  struct BinTreeNode<T> *searchNode = data < node->data ? node->LHS : node->RHS;
-
-  if (searchNode == nullptr || searchNode->data == data) {
+  if (node->data == data) {
     return node;
   }
-  return BinTree<T>::searchParentNode(searchNode, data);
+
+  struct BinTreeNode<T> *parent = node;
+  struct BinTreeNode<T> *canditate = data < node->data ? node->LHS : node->RHS;
+
+  while (canditate != nullptr && canditate->data != data) {
+    parent = canditate;
+    canditate = data < canditate->data ? canditate->LHS : canditate->RHS;
+  }
+
+  return parent;
 }
 
 //--------------------
