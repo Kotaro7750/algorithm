@@ -1,11 +1,14 @@
 #include <iostream>
+#include <queue>
 
 enum ChildDirection { LEFT, RIGHT };
 
 template <typename T> struct BinTreeNode {
   T data;
+  struct BinTreeNode<T> *Parent;
   struct BinTreeNode<T> *LHS;
   struct BinTreeNode<T> *RHS;
+  int height;
 };
 
 template <typename T> class BinTree {
@@ -17,9 +20,13 @@ public:
   bool erase(T data);
   void print();
   void RotateTest(T data);
+  bool checkBin();
+  bool checkAVL();
 
 private:
   struct BinTreeNode<T> *root;
+  int bias(struct BinTreeNode<T> *node);
+  void modHeight(struct BinTreeNode<T> *node);
   BinTreeNode<T> *searchNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
@@ -43,6 +50,20 @@ template <typename T> inline BinTreeNode<T> *BinTree<T>::getRoot() {
   return root;
 }
 
+//--------------------
+// utility
+//--------------------
+template <typename T> inline int BinTree<T>::bias(struct BinTreeNode<T> *node) {
+  int left = node->LHS == nullptr ? 0 : node->LHS->height;
+  int right = node->RHS == nullptr ? 0 : node->RHS->height;
+  return left - right;
+}
+
+template <typename T> inline void modHeight(struct BinTreeNode<T> *node) {
+  node->height =
+      1 + (node->LHS->height > node->RHS->height ? node->LHS->height
+                                                 : node->RHS->height);
+}
 //--------------------
 // search
 //--------------------
@@ -90,8 +111,10 @@ template <typename T> bool BinTree<T>::append(T data) {
 
   struct BinTreeNode<T> *newNode = new struct BinTreeNode<T>;
   newNode->data = data;
+  newNode->Parent = parent;
   newNode->LHS = nullptr;
   newNode->RHS = nullptr;
+  newNode->height = 1;
 
   if (data < parent->data) {
     parent->LHS = newNode;
@@ -281,4 +304,52 @@ template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
     printRec(node->RHS);
   }
   std::cout << "}";
+}
+
+template <typename T> bool BinTree<T>::checkBin() {
+  std::queue<struct BinTreeNode<T> *> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    struct BinTreeNode<T> *tmp = queue.front();
+    queue.pop();
+    T left = tmp->LHS == nullptr ? tmp->data - 1 : tmp->LHS->data;
+    T right = tmp->RHS == nullptr ? tmp->data + 1 : tmp->RHS->data;
+
+    if (tmp->data <= left || right <= tmp->data) {
+      return false;
+    }
+
+    if (tmp->LHS != nullptr) {
+      queue.push(tmp->LHS);
+    }
+
+    if (tmp->RHS != nullptr) {
+      queue.push(tmp->RHS);
+    }
+  }
+  return true;
+}
+
+template <typename T> bool BinTree<T>::checkAVL() {
+  std::queue<struct BinTreeNode<T> *> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    struct BinTreeNode<T> *tmp = queue.front();
+    queue.pop();
+
+    int bias = bias(tmp);
+
+    if (bias <= -2 || 2 <= bias) {
+      return false;
+    }
+
+    if (tmp->LHS != nullptr) {
+      queue.push(tmp->LHS);
+    }
+
+    if (tmp->RHS != nullptr) {
+      queue.push(tmp->RHS);
+    }
+  }
+  return true;
 }

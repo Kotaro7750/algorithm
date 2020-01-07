@@ -1,5 +1,6 @@
 #include "../BenchMark/BenchMark.hpp"
 #include "BinTree.hpp"
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -30,6 +31,7 @@ int main(int argc, char const *argv[]) {
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
 
   bt.search(search);
+  assert(bt.checkBin());
 
   return 0;
 }
