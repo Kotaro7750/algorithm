@@ -14,23 +14,23 @@ int main(int argc, char const *argv[]) {
 
   std::cout << "node_n is " << node_n << std::endl;
 
-  BinTree<int> bt(1);
+  BinTree<int> bt;
   BenchMark bm;
 
   std::random_device rand;
 
   int search;
   bm.Start();
+
   for (int i = 0; i < node_n; i++) {
     search = rand();
     bt.append(search);
   }
-  bt.append(1);
+
   long appendT = bm.Lap();
 
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
 
-  bt.search(search);
   assert(bt.checkBin());
 
   return 0;

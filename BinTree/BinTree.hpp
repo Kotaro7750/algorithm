@@ -13,7 +13,8 @@ template <typename T> struct BinTreeNode {
 
 template <typename T> class BinTree {
 public:
-  BinTree(T);
+  BinTree();
+  ~BinTree();
   BinTreeNode<T> *getRoot();
   bool search(T data);
   bool append(T data);
@@ -25,24 +26,63 @@ public:
 
 private:
   struct BinTreeNode<T> *root;
+  struct BinTreeNode<T> *nullNode;
+
   int bias(struct BinTreeNode<T> *node);
   void modHeight(struct BinTreeNode<T> *node);
+
   BinTreeNode<T> *searchNode(struct BinTreeNode<T> *node, T data);
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
+
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
+
   struct BinTreeNode<T> *LeftMaxParent(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateRight(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLeft(struct BinTreeNode<T> *node);
+
   void printRec(struct BinTreeNode<T> *node);
 };
 
-// Constructor
-template <typename T> inline BinTree<T>::BinTree(T initdata) {
-  root = new struct BinTreeNode<T>;
+template <typename T> inline BinTree<T>::BinTree() {
+  nullNode = new struct BinTreeNode<T>;
+  nullNode->LHS = nullptr;
+  nullNode->RHS = nullptr;
+  nullNode->Parent = nullptr;
+  nullNode->height = 0;
 
-  root->data = initdata;
-  root->LHS = nullptr;
-  root->RHS = nullptr;
+  root = nullNode;
+}
+
+template <typename T> BinTree<T>::~BinTree<T>() {
+  std::queue<struct BinTreeNode<T> *> queue;
+
+  if (root == nullNode) {
+    delete nullNode;
+    return;
+  }
+
+  if (root->LHS != nullNode) {
+    queue.push(root->LHS);
+  }
+  if (root->RHS != nullNode) {
+    queue.push(root->RHS);
+  }
+
+  while (!queue.empty()) {
+    struct BinTreeNode<T> *front = queue.front();
+    queue.pop();
+
+    if (front->LHS != nullNode) {
+      queue.push(front->LHS);
+    }
+    if (front->RHS != nullNode) {
+      queue.push(front->RHS);
+    }
+
+    delete front;
+  }
+  delete nullNode;
+  delete root;
 }
 
 // getter
@@ -53,10 +93,10 @@ template <typename T> inline BinTreeNode<T> *BinTree<T>::getRoot() {
 //--------------------
 // utility
 //--------------------
+
+// node must not nullNode
 template <typename T> inline int BinTree<T>::bias(struct BinTreeNode<T> *node) {
-  int left = node->LHS == nullptr ? 0 : node->LHS->height;
-  int right = node->RHS == nullptr ? 0 : node->RHS->height;
-  return left - right;
+  return node->LHS->height - node->RHS->height;
 }
 
 template <typename T> inline void modHeight(struct BinTreeNode<T> *node) {
@@ -70,7 +110,7 @@ template <typename T> inline void modHeight(struct BinTreeNode<T> *node) {
 template <typename T> bool BinTree<T>::search(T data) {
   struct BinTreeNode<T> *result = searchNode(root, data);
 
-  if (result == nullptr) {
+  if (result == nullNode) {
     return false;
   }
 
@@ -79,13 +119,13 @@ template <typename T> bool BinTree<T>::search(T data) {
 
 template <typename T>
 BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
-  if (node == nullptr || node->data == data) {
+  if (node == nullNode || node->data == data) {
     return node;
   }
 
   struct BinTreeNode<T> *searchNode = data < node->data ? node->LHS : node->RHS;
-  if (searchNode == nullptr) {
-    return nullptr;
+  if (searchNode == nullNode) {
+    return nullNode;
   }
   return BinTree<T>::searchNode(searchNode, data);
 }
@@ -94,17 +134,31 @@ BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
 // append
 //--------------------
 template <typename T> bool BinTree<T>::append(T data) {
+  // initial append
+  if (root == nullNode) {
+    struct BinTreeNode<T> *newNode = new struct BinTreeNode<T>;
+    newNode->data = data;
+    newNode->Parent = nullNode;
+    newNode->LHS = nullNode;
+    newNode->RHS = nullNode;
+    newNode->height = 1;
+
+    root = newNode;
+    return true;
+  }
+
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
+
   if (parent->data == data) {
     return false;
   }
 
   if (data < parent->data) {
-    if (parent->LHS != nullptr) {
+    if (parent->LHS != nullNode) {
       return false;
     }
   } else {
-    if (parent->RHS != nullptr) {
+    if (parent->RHS != nullNode) {
       return false;
     }
   }
@@ -112,8 +166,8 @@ template <typename T> bool BinTree<T>::append(T data) {
   struct BinTreeNode<T> *newNode = new struct BinTreeNode<T>;
   newNode->data = data;
   newNode->Parent = parent;
-  newNode->LHS = nullptr;
-  newNode->RHS = nullptr;
+  newNode->LHS = nullNode;
+  newNode->RHS = nullNode;
   newNode->height = 1;
 
   if (data < parent->data) {
@@ -129,14 +183,15 @@ template <typename T> bool BinTree<T>::append(T data) {
 template <typename T>
 BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
                                              T data) {
-  if (node->data == data) {
+  // if node is root or nullNode,return themself.
+  if (node->data == data || node == nullNode) {
     return node;
   }
 
   struct BinTreeNode<T> *parent = node;
   struct BinTreeNode<T> *canditate = data < node->data ? node->LHS : node->RHS;
 
-  while (canditate != nullptr && canditate->data != data) {
+  while (canditate != nullNode && canditate->data != data) {
     parent = canditate;
     canditate = data < canditate->data ? canditate->LHS : canditate->RHS;
   }
@@ -285,21 +340,21 @@ void BinTree<T>::print() {
 }
 
 template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
-  if (node->LHS == nullptr && node->RHS == nullptr) {
+  if (node->LHS == nullNode && node->RHS == nullNode) {
     std::cout << node->data;
     return;
   }
 
   std::cout << node->data << " {";
-  if (node->LHS != nullptr) {
+  if (node->LHS != nullNode) {
     std::cout << "L:";
     printRec(node->LHS);
 
-    if (node->RHS != nullptr) {
+    if (node->RHS != nullNode) {
       std::cout << ",";
     }
   }
-  if (node->RHS != nullptr) {
+  if (node->RHS != nullNode) {
     std::cout << "R:";
     printRec(node->RHS);
   }
@@ -309,21 +364,22 @@ template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
 template <typename T> bool BinTree<T>::checkBin() {
   std::queue<struct BinTreeNode<T> *> queue;
   queue.push(root);
+
   while (!queue.empty()) {
     struct BinTreeNode<T> *tmp = queue.front();
     queue.pop();
-    T left = tmp->LHS == nullptr ? tmp->data - 1 : tmp->LHS->data;
-    T right = tmp->RHS == nullptr ? tmp->data + 1 : tmp->RHS->data;
+    T left = tmp->LHS == nullNode ? tmp->data - 1 : tmp->LHS->data;
+    T right = tmp->RHS == nullNode ? tmp->data + 1 : tmp->RHS->data;
 
     if (tmp->data <= left || right <= tmp->data) {
       return false;
     }
 
-    if (tmp->LHS != nullptr) {
+    if (tmp->LHS != nullNode) {
       queue.push(tmp->LHS);
     }
 
-    if (tmp->RHS != nullptr) {
+    if (tmp->RHS != nullNode) {
       queue.push(tmp->RHS);
     }
   }
@@ -343,11 +399,11 @@ template <typename T> bool BinTree<T>::checkAVL() {
       return false;
     }
 
-    if (tmp->LHS != nullptr) {
+    if (tmp->LHS != nullNode) {
       queue.push(tmp->LHS);
     }
 
-    if (tmp->RHS != nullptr) {
+    if (tmp->RHS != nullNode) {
       queue.push(tmp->RHS);
     }
   }
