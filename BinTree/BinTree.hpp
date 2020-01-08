@@ -15,6 +15,7 @@ template <typename T> class BinTree {
 public:
   BinTree();
   ~BinTree();
+
   BinTreeNode<T> *getRoot();
   bool search(T data);
   bool append(T data);
@@ -340,6 +341,10 @@ void BinTree<T>::print() {
 }
 
 template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
+  if (root == nullNode) {
+    std::cout << "nullNode";
+    return;
+  }
   if (node->LHS == nullNode && node->RHS == nullNode) {
     std::cout << node->data;
     return;
@@ -362,6 +367,10 @@ template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
 }
 
 template <typename T> bool BinTree<T>::checkBin() {
+  if (root == nullNode) {
+    return true;
+  }
+
   std::queue<struct BinTreeNode<T> *> queue;
   queue.push(root);
 
