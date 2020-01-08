@@ -120,15 +120,16 @@ template <typename T> bool BinTree<T>::search(T data) {
 
 template <typename T>
 BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
-  if (node == nullNode || node->data == data) {
+  if (node == nullNode) {
     return node;
   }
 
-  struct BinTreeNode<T> *searchNode = data < node->data ? node->LHS : node->RHS;
-  if (searchNode == nullNode) {
-    return nullNode;
+  struct BinTreeNode<T> *tmp = node;
+
+  while (tmp->data != data || tmp != nullNode) {
+    tmp = data < tmp->data ? tmp->LHS : tmp->RHS;
   }
-  return BinTree<T>::searchNode(searchNode, data);
+  return tmp;
 }
 
 //--------------------
@@ -203,92 +204,11 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
 //--------------------
 // erase
 //--------------------
-template <typename T> bool BinTree<T>::erase(T data) {
-  struct BinTreeNode<T> *parentNode = searchParentNode(root, data);
-  struct BinTreeNode<T> *deleteNode;
-  struct BinTreeNode<T> *junctionNode;
-
-  if (root->data == data) {
-    deleteNode = root;
-    junctionNode = eraseNode(deleteNode);
-    root = junctionNode;
-
-    return true;
-  }
-
-  if (parentNode == nullptr) {
-    return false;
-  }
-
-  if (parentNode->LHS != nullptr && parentNode->LHS->data == data) {
-    deleteNode = parentNode->LHS;
-    junctionNode = eraseNode(deleteNode);
-    parentNode->LHS = junctionNode;
-
-  } else if (parentNode->RHS != nullptr && parentNode->RHS->data == data) {
-    deleteNode = parentNode->RHS;
-    junctionNode = eraseNode(deleteNode);
-    parentNode->RHS = junctionNode;
-  }
-
-  return true;
-}
-
-template <typename T>
-struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
-  struct BinTreeNode<T> *ret;
-  struct BinTreeNode<T> *deleteNode;
-
-  if (node->LHS == nullptr && node->RHS == nullptr) {
-    ret = nullptr;
-    deleteNode = node;
-
-  } else if (node->LHS == nullptr) {
-    ret = node->RHS;
-    deleteNode = node;
-
-  } else if (node->RHS == nullptr) {
-    ret = node->LHS;
-    deleteNode = node;
-
-  } else {
-    struct BinTreeNode<T> *leftMaxParent = LeftMaxParent(node);
-
-    // when erase root,root->LHS will be root
-    if (leftMaxParent == root->LHS) {
-      root->LHS->RHS = root->RHS;
-      ret = root->LHS;
-      deleteNode = root;
-
-    } else {
-      node->data = leftMaxParent->RHS->data;
-      deleteNode = leftMaxParent->RHS;
-      leftMaxParent->RHS = nullptr;
-      ret = node;
-    }
-  }
-
-  delete deleteNode;
-  return ret;
-}
-
-template <typename T>
-struct BinTreeNode<T> *BinTree<T>::LeftMaxParent(struct BinTreeNode<T> *node) {
-  struct BinTreeNode<T> *tmp = node->LHS;
-  while (tmp->RHS != nullptr) {
-    if (tmp->RHS->RHS == nullptr) {
-      break;
-    }
-    tmp = tmp->RHS;
-  }
-  return tmp;
-}
 
 //--------------------
 // rotate
 //--------------------
-template <typename T>
-void BinTree<T>::RotateTest(T data) {
+template <typename T> void BinTree<T>::RotateTest(T data) {
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
   struct BinTreeNode<T> *junctionNode;
 
