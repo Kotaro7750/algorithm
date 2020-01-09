@@ -43,7 +43,7 @@ int main(int argc, char const *argv[]) {
   assert(bt.checkBin());
   bt.print();
 
-  bt.erase(0);
+  bt.erase(2);
   assert(bt.checkBin());
   bt.print();
 
