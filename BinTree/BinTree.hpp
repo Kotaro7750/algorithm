@@ -259,7 +259,6 @@ struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
   // child num:2
   if (node->LHS != nullNode && node->RHS != nullNode) {
     struct BinTreeNode<T> *leftMaxNode = LeftMax(node);
-    Log("leftMaxNode is:", leftMaxNode->data);
 
     node->data = leftMaxNode->data;
 
@@ -276,7 +275,6 @@ struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
   }
 
   delete deleteNode;
-  print();
   return junctionNode;
 }
 
