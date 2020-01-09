@@ -37,7 +37,7 @@ private:
 
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
 
-  struct BinTreeNode<T> *LeftMaxParent(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *LeftMax(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateRight(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLeft(struct BinTreeNode<T> *node);
 
@@ -126,7 +126,7 @@ BinTreeNode<T> *BinTree<T>::searchNode(struct BinTreeNode<T> *node, T data) {
 
   struct BinTreeNode<T> *tmp = node;
 
-  while (tmp->data != data || tmp != nullNode) {
+  while (tmp != nullNode && tmp->data != data) {
     tmp = data < tmp->data ? tmp->LHS : tmp->RHS;
   }
   return tmp;
@@ -205,10 +205,93 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
 // erase
 //--------------------
 
+#define Log(str, x) std::cout << str << x << std::endl;
+template <typename T> bool BinTree<T>::erase(T data) {
+  struct BinTreeNode<T> *deleteNode = searchNode(root, data);
+  struct BinTreeNode<T> *parentNode;
+  struct BinTreeNode<T> *junctionNode;
+
+  if (deleteNode == nullNode) {
+    return false;
+  }
+
+  if (deleteNode == root) {
+    eraseNode(deleteNode);
+    return true;
+  } else {
+    parentNode = deleteNode->Parent;
+    junctionNode = eraseNode(deleteNode);
+    if (data < parentNode->data) {
+      parentNode->LHS = junctionNode;
+    } else {
+      parentNode->RHS = junctionNode;
+    }
+    return true;
+  }
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *junctionNode;
+  struct BinTreeNode<T> *deleteNode;
+
+  // child num:0
+  if (node->LHS == nullNode && node->RHS == nullNode) {
+    if (node == root) {
+      root = nullNode;
+    }
+    junctionNode = nullNode;
+    deleteNode = node;
+  }
+
+  // child num:1
+  if ((node->LHS != nullNode && node->RHS == nullNode) ||
+      (node->RHS != nullNode && node->LHS == nullNode)) {
+    junctionNode = node->LHS == nullNode ? node->RHS : node->LHS;
+
+    if (node == root) {
+      root = junctionNode;
+    }
+
+    deleteNode = node;
+  }
+
+  // child num:2
+  if (node->LHS != nullNode && node->RHS != nullNode) {
+    struct BinTreeNode<T> *leftMaxNode = LeftMax(node);
+    Log("leftMaxNode is:", leftMaxNode->data);
+
+    node->data = leftMaxNode->data;
+
+    // when leftMaxNode is not just a leftNode,
+    // RHS of leftMaxNode's parent will be nullNode
+    if (leftMaxNode->Parent->RHS != nullNode) {
+      leftMaxNode->Parent->RHS = nullNode;
+    }
+
+    junctionNode = node;
+    deleteNode = leftMaxNode;
+  }
+
+  delete deleteNode;
+  return junctionNode;
+}
+
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::LeftMax(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *leftMaxNode = node->LHS;
+
+  while (leftMaxNode->RHS != nullNode) {
+    leftMaxNode = leftMaxNode->RHS;
+  }
+  return leftMaxNode;
+}
+
 //--------------------
 // rotate
 //--------------------
-template <typename T> void BinTree<T>::RotateTest(T data) {
+template <typename T>
+void BinTree<T>::RotateTest(T data) {
   struct BinTreeNode<T> *parent = searchParentNode(root, data);
   struct BinTreeNode<T> *junctionNode;
 
