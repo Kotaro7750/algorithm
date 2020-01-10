@@ -23,6 +23,7 @@ public:
   bool erase(T data);
   void print();
   void graph();
+  void graphDebug();
   void RotateTest(T data);
   bool checkBin();
   bool checkAVL();
@@ -199,8 +200,6 @@ template <typename T> bool BinTree<T>::append(T data) {
   newNode->RHS = nullNode;
   newNode->height = 1;
 
-  // Log("append:", data);
-
   if (data < parent->data) {
     parent->LHS = newNode;
     Balance(true, parent->LHS);
@@ -333,9 +332,7 @@ void BinTree<T>::RotateTest(T data) {
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateR(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *LHS = node->LHS;
-  // struct BinTreeNode<T> *X = node->LHS->LHS;
   struct BinTreeNode<T> *Y = node->LHS->RHS;
-  // struct BinTreeNode<T> *Z = node->RHS;
 
   struct BinTreeNode<T> *partitionRoot = LHS;
 
@@ -346,10 +343,6 @@ struct BinTreeNode<T> *BinTree<T>::RotateR(struct BinTreeNode<T> *node) {
 
   partitionRoot->RHS = node;
 
-  // if (node == root) {
-  //  root = partitionRoot;
-  //  root->Parent = nullNode;
-  //}
   Replace(node, LHS);
   node->Parent = LHS;
 
@@ -375,9 +368,7 @@ struct BinTreeNode<T> *BinTree<T>::RotateRL(struct BinTreeNode<T> *node) {
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateL(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *RHS = node->RHS;
-  // struct BinTreeNode<T> *X = node->LHS;
   struct BinTreeNode<T> *Y = node->RHS->LHS;
-  // struct BinTreeNode<T> *Z = node->RHS;
 
   struct BinTreeNode<T> *partitionRoot = RHS;
 
@@ -389,11 +380,6 @@ struct BinTreeNode<T> *BinTree<T>::RotateL(struct BinTreeNode<T> *node) {
   partitionRoot->LHS = node;
   Replace(node, RHS);
   node->Parent = RHS;
-
-  // if (node == root) {
-  //  root = partitionRoot;
-  //  root->Parent = nullNode;
-  //}
 
   modHeight(partitionRoot->LHS);
   modHeight(partitionRoot);
@@ -422,10 +408,6 @@ void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
   int height = targetNode->height;
 
   while (targetNode->Parent != nullNode) {
-    // Log("loop height", height);
-    // Log("loop data", targetNode->data);
-    // Log("loop parentNode", targetNode->Parent->data);
-
     struct BinTreeNode<T> *parentNode = targetNode->Parent;
 
     // insert: when target node is LHS, erase: when objective node is RHS
@@ -435,30 +417,14 @@ void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
 
         parentNode = bias(parentNode->LHS) >= 0 ? RotateR(parentNode)
                                                 : RotateLR(parentNode);
-        // if (bias(parentNode->LHS) >= 0) {
-        //  RotateR(parentNode);
-        //} else {
-        //  RotateLR(parentNode);
-        //}
-
-        // graph();
       } else {
         modHeight(parentNode);
       }
       // insert: when target node is RHS, erase: when objective node is LHS
     } else {
       if (bias(parentNode) == -2) {
-        // graph();
         parentNode = bias(parentNode->RHS) <= 0 ? RotateL(parentNode)
                                                 : RotateRL(parentNode);
-
-        // if (bias(parentNode->RHS) >= 0) {
-        //  RotateL(parentNode);
-        //} else {
-        //  RotateRL(parentNode);
-        //}
-
-        // graph();
       } else {
         modHeight(parentNode);
       }
@@ -525,6 +491,58 @@ template <typename T> void BinTree<T>::graph() {
     struct BinTreeNode<T> *front = queue.front();
     queue.pop();
 
+    ofs << front->data << "[label=\"" << front->data << "\"];" << std::endl;
+
+    if (front->LHS != nullNode) {
+      ofs << front->data << " -> " << front->LHS->data << ";" << std::endl;
+      queue.push(front->LHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+
+    if (front->RHS != nullNode) {
+      ofs << front->data << " -> " << front->RHS->data << ";" << std::endl;
+      queue.push(front->RHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+  }
+
+  ofs << "}" << std::endl;
+
+  system("dot -Kdot -Tpng bintree.dot -obintree.png");
+  system("rm bintree.dot");
+  system("eog bintree.png");
+  system("rm bintree.png");
+}
+
+template <typename T> void BinTree<T>::graphDebug() {
+  std::ofstream ofs("bintree.dot");
+
+  ofs << "digraph BinTree {" << std::endl;
+  ofs << "graph [centering=\"false\",ranksep=0.2,ordering=out,nodesep=0.5];"
+      << std::endl;
+  ofs << "node [shape=circle,width = 0.2, height = 0.2, margin = "
+         "0.01];"
+      << std::endl;
+
+  std::queue<struct BinTreeNode<T> *> queue;
+  queue.push(root);
+
+  int nullCount = 0;
+
+  while (!queue.empty()) {
+    struct BinTreeNode<T> *front = queue.front();
+    queue.pop();
+
     ofs << front->data << "[label=\"" << front->data << "("
         << front->Parent->data << "," << front->height << "," << bias(front)
         << ")\"];" << std::endl;
@@ -538,10 +556,8 @@ template <typename T> void BinTree<T>::graph() {
     } else {
       ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
           << std::endl;
-      ofs << front->data
-          << " -> "
-          //<< "nullNode" << nullCount << "[style=invis];" << std::endl;
-          << "nullNode" << nullCount << "[];" << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << ";" << std::endl;
       nullCount++;
     }
 
@@ -551,10 +567,8 @@ template <typename T> void BinTree<T>::graph() {
     } else {
       ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
           << std::endl;
-      ofs << front->data
-          << " -> "
-          //<< "nullNode" << nullCount << "[style=invis];" << std::endl;
-          << "nullNode" << nullCount << "[];" << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << ";" << std::endl;
       nullCount++;
     }
   }
