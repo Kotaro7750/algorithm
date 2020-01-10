@@ -26,23 +26,23 @@ int main(int argc, char const *argv[]) {
   //  search = rand() % 10;
   //  bt.append(search);
   //}
-  bt.append(0);
-  bt.append(1);
+
+  bt.append(100);
   bt.append(-1);
-  bt.append(5);
+  bt.append(0);
   bt.append(-5);
-  bt.append(3);
   bt.append(-3);
-  bt.append(4);
-  bt.append(6);
   bt.append(-6);
-  bt.append(7);
+  bt.append(-2);
+  bt.append(-4);
 
   long appendT = bm.Lap();
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
+  bt.graph();
   assert(bt.checkBin());
 
-  bt.erase(2);
+  bt.RotateTest(0);
+
   assert(bt.checkBin());
   bt.graph();
 

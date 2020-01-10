@@ -40,8 +40,10 @@ private:
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
 
   struct BinTreeNode<T> *LeftMax(struct BinTreeNode<T> *node);
-  struct BinTreeNode<T> *RotateRight(struct BinTreeNode<T> *node);
-  struct BinTreeNode<T> *RotateLeft(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateR(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateL(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateRL(struct BinTreeNode<T> *node);
+  struct BinTreeNode<T> *RotateLR(struct BinTreeNode<T> *node);
 
   void printRec(struct BinTreeNode<T> *node);
 };
@@ -295,22 +297,15 @@ struct BinTreeNode<T> *BinTree<T>::LeftMax(struct BinTreeNode<T> *node) {
 //--------------------
 template <typename T>
 void BinTree<T>::RotateTest(T data) {
-  struct BinTreeNode<T> *parent = searchParentNode(root, data);
-  struct BinTreeNode<T> *junctionNode;
-
-  if (parent->LHS != nullptr && parent->LHS->data == data) {
-    junctionNode = RotateRight(parent->LHS);
-    parent->LHS = junctionNode;
-  } else if (parent->RHS != nullptr && parent->RHS->data == data) {
-    junctionNode = RotateRight(parent->RHS);
-    parent->RHS = junctionNode;
-  }
-
+  root->LHS = RotateLR(root->LHS);
   return;
 }
 
+//      node            LHS
+//   LHS    Z   -->    X   node
+//  X   Y                 Y    Z
 template <typename T>
-struct BinTreeNode<T> *BinTree<T>::RotateRight(struct BinTreeNode<T> *node) {
+struct BinTreeNode<T> *BinTree<T>::RotateR(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *X = node->LHS->LHS;
   struct BinTreeNode<T> *Y = node->LHS->RHS;
   struct BinTreeNode<T> *Z = node->RHS;
@@ -320,11 +315,29 @@ struct BinTreeNode<T> *BinTree<T>::RotateRight(struct BinTreeNode<T> *node) {
   node->LHS = Y;
   partitionRoot->RHS = node;
 
+  if (node == root) {
+    root = partitionRoot;
+    root->Parent = nullNode;
+  }
+
   return partitionRoot;
 }
 
+//   node                   LHS
+// W      RHS          node     RHS
+//     LHS   Z  -->   W    X   Y   Z
+//    X   Y
 template <typename T>
-struct BinTreeNode<T> *BinTree<T>::RotateLeft(struct BinTreeNode<T> *node) {
+struct BinTreeNode<T> *BinTree<T>::RotateRL(struct BinTreeNode<T> *node) {
+  node->RHS = RotateR(node->RHS);
+  return RotateL(node);
+}
+
+//   node                RHS
+//  X    RHS   -->   node   Z
+//     Y    Z       X    Y
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::RotateL(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *X = node->LHS;
   struct BinTreeNode<T> *Y = node->RHS->LHS;
   struct BinTreeNode<T> *Z = node->RHS;
@@ -334,7 +347,22 @@ struct BinTreeNode<T> *BinTree<T>::RotateLeft(struct BinTreeNode<T> *node) {
   node->RHS = Y;
   partitionRoot->LHS = node;
 
+  if (node == root) {
+    root = partitionRoot;
+    root->Parent = nullNode;
+  }
+
   return partitionRoot;
+}
+
+//       node            RHS
+//   LHS      Z      LHS     node
+//  W   RHS     --> W   X   Y    Z
+//     X   Y
+template <typename T>
+struct BinTreeNode<T> *BinTree<T>::RotateLR(struct BinTreeNode<T> *node) {
+  node->LHS = RotateL(node->LHS);
+  return RotateR(node);
 }
 
 //--------------------
