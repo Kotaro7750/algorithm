@@ -22,29 +22,27 @@ int main(int argc, char const *argv[]) {
   int search;
   bm.Start();
 
-  // for (int i = 0; i < node_n; i++) {
-  //  search = rand() % 10;
-  //  bt.append(search);
-  //}
+  for (int i = 0; i < node_n; i++) {
+    search = rand();
+    bt.append(search);
+  }
 
-  bt.append(100);
-  bt.append(-1);
-  bt.append(0);
-  bt.append(-5);
-  bt.append(-3);
-  bt.append(-6);
-  bt.append(-2);
-  bt.append(-4);
+  // bt.append(7);
+  // bt.append(3);
+  // bt.append(6);
+  // bt.append(6);
+  // bt.append(8);
+  // bt.append(1);
+  // bt.append(2);
+  // bt.append(9);
 
   long appendT = bm.Lap();
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
-  bt.graph();
+  // bt.graph();
+  assert(bt.checkAVL());
   assert(bt.checkBin());
 
-  bt.RotateTest(0);
-
-  assert(bt.checkBin());
-  bt.graph();
+  // bt.RotateTest(0);
 
   return 0;
 }

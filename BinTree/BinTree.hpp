@@ -2,7 +2,7 @@
 #include <iostream>
 #include <queue>
 
-enum ChildDirection { LEFT, RIGHT };
+#define Log(str, x) std::cout << str << x << std::endl;
 
 template <typename T> struct BinTreeNode {
   T data;
@@ -38,12 +38,14 @@ private:
   BinTreeNode<T> *searchParentNode(struct BinTreeNode<T> *node, T data);
 
   BinTreeNode<T> *eraseNode(struct BinTreeNode<T> *node);
-
   struct BinTreeNode<T> *LeftMax(struct BinTreeNode<T> *node);
+
+  void Replace(struct BinTreeNode<T> *before, struct BinTreeNode<T> *after);
   struct BinTreeNode<T> *RotateR(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateRL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLR(struct BinTreeNode<T> *node);
+  void Balance(bool mode, struct BinTreeNode<T> *node);
 
   void printRec(struct BinTreeNode<T> *node);
 };
@@ -104,10 +106,31 @@ template <typename T> inline int BinTree<T>::bias(struct BinTreeNode<T> *node) {
   return node->LHS->height - node->RHS->height;
 }
 
-template <typename T> inline void modHeight(struct BinTreeNode<T> *node) {
+template <typename T>
+inline void BinTree<T>::modHeight(struct BinTreeNode<T> *node) {
   node->height =
       1 + (node->LHS->height > node->RHS->height ? node->LHS->height
                                                  : node->RHS->height);
+}
+
+template <typename T>
+void BinTree<T>::Replace(struct BinTreeNode<T> *before,
+                         struct BinTreeNode<T> *after) {
+  if (before == root) {
+    // Log("replace root", before->data);
+    root = after;
+    root->Parent = nullNode;
+    return;
+  }
+
+  struct BinTreeNode<T> *parentNode = before->Parent;
+  if (parentNode->LHS == before) {
+    parentNode->LHS = after;
+  } else {
+    parentNode->RHS = after;
+  }
+
+  after->Parent = parentNode;
 }
 //--------------------
 // search
@@ -176,10 +199,14 @@ template <typename T> bool BinTree<T>::append(T data) {
   newNode->RHS = nullNode;
   newNode->height = 1;
 
+  // Log("append:", data);
+
   if (data < parent->data) {
     parent->LHS = newNode;
+    Balance(true, parent->LHS);
   } else {
     parent->RHS = newNode;
+    Balance(true, parent->RHS);
   }
 
   return true;
@@ -209,7 +236,6 @@ BinTreeNode<T> *BinTree<T>::searchParentNode(struct BinTreeNode<T> *node,
 // erase
 //--------------------
 
-#define Log(str, x) std::cout << str << x << std::endl;
 template <typename T> bool BinTree<T>::erase(T data) {
   struct BinTreeNode<T> *deleteNode = searchNode(root, data);
   struct BinTreeNode<T> *parentNode;
@@ -297,7 +323,7 @@ struct BinTreeNode<T> *BinTree<T>::LeftMax(struct BinTreeNode<T> *node) {
 //--------------------
 template <typename T>
 void BinTree<T>::RotateTest(T data) {
-  root->LHS = RotateLR(root->LHS);
+  RotateR(root->LHS);
   return;
 }
 
@@ -306,19 +332,29 @@ void BinTree<T>::RotateTest(T data) {
 //  X   Y                 Y    Z
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateR(struct BinTreeNode<T> *node) {
-  struct BinTreeNode<T> *X = node->LHS->LHS;
+  struct BinTreeNode<T> *LHS = node->LHS;
+  // struct BinTreeNode<T> *X = node->LHS->LHS;
   struct BinTreeNode<T> *Y = node->LHS->RHS;
-  struct BinTreeNode<T> *Z = node->RHS;
+  // struct BinTreeNode<T> *Z = node->RHS;
 
-  struct BinTreeNode<T> *partitionRoot = node->LHS;
+  struct BinTreeNode<T> *partitionRoot = LHS;
 
   node->LHS = Y;
+  if (Y != nullNode) {
+    Y->Parent = node;
+  }
+
   partitionRoot->RHS = node;
 
-  if (node == root) {
-    root = partitionRoot;
-    root->Parent = nullNode;
-  }
+  // if (node == root) {
+  //  root = partitionRoot;
+  //  root->Parent = nullNode;
+  //}
+  Replace(node, LHS);
+  node->Parent = LHS;
+
+  modHeight(partitionRoot->RHS);
+  modHeight(partitionRoot);
 
   return partitionRoot;
 }
@@ -329,7 +365,7 @@ struct BinTreeNode<T> *BinTree<T>::RotateR(struct BinTreeNode<T> *node) {
 //    X   Y
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateRL(struct BinTreeNode<T> *node) {
-  node->RHS = RotateR(node->RHS);
+  RotateR(node->RHS);
   return RotateL(node);
 }
 
@@ -338,19 +374,29 @@ struct BinTreeNode<T> *BinTree<T>::RotateRL(struct BinTreeNode<T> *node) {
 //     Y    Z       X    Y
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateL(struct BinTreeNode<T> *node) {
-  struct BinTreeNode<T> *X = node->LHS;
+  struct BinTreeNode<T> *RHS = node->RHS;
+  // struct BinTreeNode<T> *X = node->LHS;
   struct BinTreeNode<T> *Y = node->RHS->LHS;
-  struct BinTreeNode<T> *Z = node->RHS;
+  // struct BinTreeNode<T> *Z = node->RHS;
 
-  struct BinTreeNode<T> *partitionRoot = node->RHS;
+  struct BinTreeNode<T> *partitionRoot = RHS;
 
   node->RHS = Y;
-  partitionRoot->LHS = node;
-
-  if (node == root) {
-    root = partitionRoot;
-    root->Parent = nullNode;
+  if (Y != nullNode) {
+    Y->Parent = node;
   }
+
+  partitionRoot->LHS = node;
+  Replace(node, RHS);
+  node->Parent = RHS;
+
+  // if (node == root) {
+  //  root = partitionRoot;
+  //  root->Parent = nullNode;
+  //}
+
+  modHeight(partitionRoot->LHS);
+  modHeight(partitionRoot);
 
   return partitionRoot;
 }
@@ -361,15 +407,75 @@ struct BinTreeNode<T> *BinTree<T>::RotateL(struct BinTreeNode<T> *node) {
 //     X   Y
 template <typename T>
 struct BinTreeNode<T> *BinTree<T>::RotateLR(struct BinTreeNode<T> *node) {
-  node->LHS = RotateL(node->LHS);
+  RotateL(node->LHS);
   return RotateR(node);
+}
+
+//--------------------
+// balance
+//--------------------
+
+// mode insert:true delete:false
+template <typename T>
+void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *targetNode = node;
+  int height = targetNode->height;
+
+  while (targetNode->Parent != nullNode) {
+    // Log("loop height", height);
+    // Log("loop data", targetNode->data);
+    // Log("loop parentNode", targetNode->Parent->data);
+
+    struct BinTreeNode<T> *parentNode = targetNode->Parent;
+
+    // insert: when target node is LHS, erase: when objective node is RHS
+    if ((parentNode->LHS == targetNode) == mode) {
+      if (bias(parentNode) == 2) {
+        // graph();
+
+        parentNode = bias(parentNode->LHS) >= 0 ? RotateR(parentNode)
+                                                : RotateLR(parentNode);
+        // if (bias(parentNode->LHS) >= 0) {
+        //  RotateR(parentNode);
+        //} else {
+        //  RotateLR(parentNode);
+        //}
+
+        // graph();
+      } else {
+        modHeight(parentNode);
+      }
+      // insert: when target node is RHS, erase: when objective node is LHS
+    } else {
+      if (bias(parentNode) == -2) {
+        // graph();
+        parentNode = bias(parentNode->RHS) <= 0 ? RotateL(parentNode)
+                                                : RotateRL(parentNode);
+
+        // if (bias(parentNode->RHS) >= 0) {
+        //  RotateL(parentNode);
+        //} else {
+        //  RotateRL(parentNode);
+        //}
+
+        // graph();
+      } else {
+        modHeight(parentNode);
+      }
+    }
+
+    if (height == parentNode->height) {
+      break;
+    }
+
+    targetNode = parentNode;
+  }
 }
 
 //--------------------
 // debug
 //--------------------
-template <typename T>
-void BinTree<T>::print() {
+template <typename T> void BinTree<T>::print() {
   printRec(root);
   std::cout << std::endl;
 }
@@ -419,7 +525,12 @@ template <typename T> void BinTree<T>::graph() {
     struct BinTreeNode<T> *front = queue.front();
     queue.pop();
 
-    ofs << front->data << ";" << std::endl;
+    ofs << front->data << "[label=\"" << front->data << "("
+        << front->Parent->data << "," << front->height << "," << bias(front)
+        << ")\"];" << std::endl;
+    if (front != root) {
+      ofs << front->data << " -> " << front->Parent->data << ";" << std::endl;
+    }
 
     if (front->LHS != nullNode) {
       ofs << front->data << " -> " << front->LHS->data << ";" << std::endl;
@@ -427,8 +538,10 @@ template <typename T> void BinTree<T>::graph() {
     } else {
       ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
           << std::endl;
-      ofs << front->data << " -> "
-          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      ofs << front->data
+          << " -> "
+          //<< "nullNode" << nullCount << "[style=invis];" << std::endl;
+          << "nullNode" << nullCount << "[];" << std::endl;
       nullCount++;
     }
 
@@ -438,8 +551,10 @@ template <typename T> void BinTree<T>::graph() {
     } else {
       ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
           << std::endl;
-      ofs << front->data << " -> "
-          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      ofs << front->data
+          << " -> "
+          //<< "nullNode" << nullCount << "[style=invis];" << std::endl;
+          << "nullNode" << nullCount << "[];" << std::endl;
       nullCount++;
     }
   }
@@ -484,13 +599,14 @@ template <typename T> bool BinTree<T>::checkBin() {
 template <typename T> bool BinTree<T>::checkAVL() {
   std::queue<struct BinTreeNode<T> *> queue;
   queue.push(root);
+
   while (!queue.empty()) {
     struct BinTreeNode<T> *tmp = queue.front();
     queue.pop();
 
-    int bias = bias(tmp);
+    int tmpBias = bias(tmp);
 
-    if (bias <= -2 || 2 <= bias) {
+    if (tmpBias <= -2 || 2 <= tmpBias) {
       return false;
     }
 
