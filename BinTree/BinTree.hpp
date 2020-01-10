@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <queue>
 
@@ -21,6 +22,7 @@ public:
   bool append(T data);
   bool erase(T data);
   void print();
+  void graph();
   void RotateTest(T data);
   bool checkBin();
   bool checkAVL();
@@ -266,7 +268,7 @@ struct BinTreeNode<T> *BinTree<T>::eraseNode(struct BinTreeNode<T> *node) {
     // RHS of leftMaxNode's parent will be nullNode
     if (node->LHS != leftMaxNode) {
       leftMaxNode->Parent->RHS = nullNode;
-    }else {
+    } else {
       node->LHS = eraseNode(leftMaxNode);
     }
 
@@ -368,6 +370,58 @@ template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
     printRec(node->RHS);
   }
   std::cout << "}";
+}
+
+template <typename T> void BinTree<T>::graph() {
+  std::ofstream ofs("bintree.dot");
+
+  ofs << "digraph BinTree {" << std::endl;
+  ofs << "graph [centering=\"false\",ranksep=0.2,ordering=out,nodesep=0.5];"
+      << std::endl;
+  ofs << "node [shape=circle,width = 0.2, height = 0.2, margin = "
+         "0.01];"
+      << std::endl;
+
+  std::queue<struct BinTreeNode<T> *> queue;
+  queue.push(root);
+
+  int nullCount = 0;
+
+  while (!queue.empty()) {
+    struct BinTreeNode<T> *front = queue.front();
+    queue.pop();
+
+    ofs << front->data << ";" << std::endl;
+
+    if (front->LHS != nullNode) {
+      ofs << front->data << " -> " << front->LHS->data << ";" << std::endl;
+      queue.push(front->LHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+
+    if (front->RHS != nullNode) {
+      ofs << front->data << " -> " << front->RHS->data << ";" << std::endl;
+      queue.push(front->RHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+  }
+
+  ofs << "}" << std::endl;
+
+  system("dot -Kdot -Tpng bintree.dot -obintree.png");
+  system("rm bintree.dot");
+  system("eog bintree.png");
+  system("rm bintree.png");
 }
 
 template <typename T> bool BinTree<T>::checkBin() {

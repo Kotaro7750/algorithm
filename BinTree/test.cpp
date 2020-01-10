@@ -41,11 +41,10 @@ int main(int argc, char const *argv[]) {
   long appendT = bm.Lap();
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
   assert(bt.checkBin());
-  bt.print();
 
   bt.erase(2);
   assert(bt.checkBin());
-  bt.print();
+  bt.graph();
 
   return 0;
 }
