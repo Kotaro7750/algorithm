@@ -21,7 +21,6 @@ public:
   bool search(T data);
   bool append(T data);
   bool erase(T data);
-  void print();
   void graph();
   void graphDebug();
   void RotateTest(T data);
@@ -46,9 +45,7 @@ private:
   struct BinTreeNode<T> *RotateL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateRL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLR(struct BinTreeNode<T> *node);
-  void Balance(bool mode, struct BinTreeNode<T> *node);
-
-  void printRec(struct BinTreeNode<T> *node);
+  void BalanceI(struct BinTreeNode<T> *node);
 };
 
 template <typename T> inline BinTree<T>::BinTree() {
@@ -202,10 +199,10 @@ template <typename T> bool BinTree<T>::append(T data) {
 
   if (data < parent->data) {
     parent->LHS = newNode;
-    Balance(true, parent->LHS);
+    BalanceI(parent->LHS);
   } else {
     parent->RHS = newNode;
-    Balance(true, parent->RHS);
+    BalanceI(parent->RHS);
   }
 
   return true;
@@ -401,9 +398,8 @@ struct BinTreeNode<T> *BinTree<T>::RotateLR(struct BinTreeNode<T> *node) {
 // balance
 //--------------------
 
-// mode insert:true delete:false
 template <typename T>
-void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
+void BinTree<T>::BalanceI(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *targetNode = node;
   int height = targetNode->height;
 
@@ -411,7 +407,7 @@ void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
     struct BinTreeNode<T> *parentNode = targetNode->Parent;
 
     // insert: when target node is LHS, erase: when objective node is RHS
-    if ((parentNode->LHS == targetNode) == mode) {
+    if (parentNode->LHS == targetNode) {
       if (bias(parentNode) == 2) {
         // graph();
 
@@ -441,36 +437,6 @@ void BinTree<T>::Balance(bool mode, struct BinTreeNode<T> *node) {
 //--------------------
 // debug
 //--------------------
-template <typename T> void BinTree<T>::print() {
-  printRec(root);
-  std::cout << std::endl;
-}
-
-template <typename T> void BinTree<T>::printRec(struct BinTreeNode<T> *node) {
-  if (root == nullNode) {
-    std::cout << "nullNode";
-    return;
-  }
-  if (node->LHS == nullNode && node->RHS == nullNode) {
-    std::cout << node->data;
-    return;
-  }
-
-  std::cout << node->data << " {";
-  if (node->LHS != nullNode) {
-    std::cout << "L:";
-    printRec(node->LHS);
-
-    if (node->RHS != nullNode) {
-      std::cout << ",";
-    }
-  }
-  if (node->RHS != nullNode) {
-    std::cout << "R:";
-    printRec(node->RHS);
-  }
-  std::cout << "}";
-}
 
 template <typename T> void BinTree<T>::graph() {
   std::ofstream ofs("bintree.dot");
