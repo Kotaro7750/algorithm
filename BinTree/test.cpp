@@ -35,7 +35,7 @@ int main(int argc, char const *argv[]) {
   bm.Lap();
   for (int i = 0; i < node_n; i++) {
     search = (int)rand();
-    bt.eraseEx(search);
+    bt.erase(search);
   }
   long eraseT = bm.Lap();
 
