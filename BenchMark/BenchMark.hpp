@@ -9,6 +9,8 @@ public:
   void Stop();
   long Lap();
   long getLap(long);
+  long getLapUS(long);
+  long getLapNS(long);
 
 private:
   std::chrono::system_clock::time_point startTime;
@@ -40,4 +42,12 @@ long BenchMark::Lap() {
 
 long BenchMark::getLap(long i) {
   return std::chrono::duration_cast<std::chrono::milliseconds>(lap[i]).count();
+}
+
+long BenchMark::getLapUS(long i) {
+  return std::chrono::duration_cast<std::chrono::microseconds>(lap[i]).count();
+}
+
+long BenchMark::getLapNS(long i) {
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(lap[i]).count();
 }
