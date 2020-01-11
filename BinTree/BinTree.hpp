@@ -2,8 +2,6 @@
 #include <iostream>
 #include <queue>
 
-#define Log(str, x) std::cout << str << x << std::endl;
-
 template <typename T> struct BinTreeNode {
   T data;
   struct BinTreeNode<T> *Parent;
