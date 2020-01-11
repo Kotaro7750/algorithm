@@ -50,6 +50,8 @@ private:
 
   void BalanceI(struct BinTreeNode<T> *node);
   void BalanceD(struct BinTreeNode<T> *node);
+
+  void DumpNode(struct BinTreeNode<T> *node);
 };
 
 template <typename T> inline BinTree<T>::BinTree() {
@@ -142,7 +144,7 @@ void BinTree<T>::ReplaceEx(struct BinTreeNode<T> *before,
 
   if (before == root) {
     root = after;
-  } else if (before->data < parentNode->data) {
+  } else if (parentNode->LHS == before) {
     parentNode->LHS = after;
   } else {
     parentNode->RHS = after;
@@ -286,12 +288,15 @@ template <typename T> bool BinTree<T>::eraseEx(T data) {
   if (deleteNode->LHS == nullNode) {
     ReplaceEx(deleteNode, deleteNode->RHS);
     BalanceD(deleteNode->RHS);
+    // delete deleteNode;
   } else {
     struct BinTreeNode<T> *leftMaxNode = LeftMax(deleteNode);
     deleteNode->data = leftMaxNode->data;
     ReplaceEx(leftMaxNode, leftMaxNode->LHS);
     BalanceD(leftMaxNode->LHS);
+    // delete leftMaxNode;
   }
+  return true;
 }
 
 template <typename T>
@@ -633,6 +638,7 @@ template <typename T> bool BinTree<T>::checkBin() {
     T right = tmp->RHS == nullNode ? tmp->data + 1 : tmp->RHS->data;
 
     if (tmp->data <= left || right <= tmp->data) {
+      DumpNode(tmp);
       return false;
     }
 
@@ -658,6 +664,7 @@ template <typename T> bool BinTree<T>::checkAVL() {
     int tmpBias = bias(tmp);
 
     if (tmpBias <= -2 || 2 <= tmpBias) {
+      DumpNode(tmp);
       return false;
     }
 
@@ -670,4 +677,24 @@ template <typename T> bool BinTree<T>::checkAVL() {
     }
   }
   return true;
+}
+
+template <typename T> void BinTree<T>::DumpNode(struct BinTreeNode<T> *node) {
+  if (node == nullNode) {
+    std::cout << "nullNode" << std::endl;
+    return;
+  }
+  std::cout << "data:" << node->data << ",height:" << node->height
+            << ",bias:" << bias(node) << ",LHS:" << node->LHS->data
+            << ",RHS:" << node->RHS->data << std::endl;
+
+  if (node->LHS == nullNode) {
+    std::cout << "LHS is nullNode" << std::endl;
+  }
+  if (node->RHS == nullNode) {
+    std::cout << "RHS is nullNode" << std::endl;
+  }
+  if (node == root) {
+    std::cout << "root node" << std::endl;
+  }
 }

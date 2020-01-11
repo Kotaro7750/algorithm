@@ -23,25 +23,25 @@ int main(int argc, char const *argv[]) {
   bm.Start();
 
   for (int i = 0; i < node_n; i++) {
-    // search = rand();
-    search = i;
+    search = (int)rand();
     bt.append(search);
   }
 
   long appendT = bm.Lap();
   std::cout << "append time:" << bm.getLap(appendT) << "[ms]" << std::endl;
-  bt.graph();
   assert(bt.checkAVL());
   assert(bt.checkBin());
 
+  bm.Lap();
   for (int i = 0; i < node_n; i++) {
-    // search = rand();
-    search = i;
+    search = (int)rand();
     bt.eraseEx(search);
-    bt.graph();
   }
+  long eraseT = bm.Lap();
 
-  // bt.RotateTest(0);
+  std::cout << "erase time:" << bm.getLap(eraseT) << "[ms]" << std::endl;
+  assert(bt.checkAVL());
+  assert(bt.checkBin());
 
   return 0;
 }
