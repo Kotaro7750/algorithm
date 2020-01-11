@@ -21,6 +21,7 @@ public:
   bool search(T data);
   bool append(T data);
   bool erase(T data);
+  bool eraseEx(T data);
   void graph();
   void graphDebug();
   void RotateTest(T data);
@@ -41,11 +42,14 @@ private:
   struct BinTreeNode<T> *LeftMax(struct BinTreeNode<T> *node);
 
   void Replace(struct BinTreeNode<T> *before, struct BinTreeNode<T> *after);
+  void ReplaceEx(struct BinTreeNode<T> *before, struct BinTreeNode<T> *after);
   struct BinTreeNode<T> *RotateR(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateRL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLR(struct BinTreeNode<T> *node);
+
   void BalanceI(struct BinTreeNode<T> *node);
+  void BalanceD(struct BinTreeNode<T> *node);
 };
 
 template <typename T> inline BinTree<T>::BinTree() {
@@ -123,6 +127,22 @@ void BinTree<T>::Replace(struct BinTreeNode<T> *before,
 
   struct BinTreeNode<T> *parentNode = before->Parent;
   if (parentNode->LHS == before) {
+    parentNode->LHS = after;
+  } else {
+    parentNode->RHS = after;
+  }
+
+  after->Parent = parentNode;
+}
+
+template <typename T>
+void BinTree<T>::ReplaceEx(struct BinTreeNode<T> *before,
+                           struct BinTreeNode<T> *after) {
+  struct BinTreeNode<T> *parentNode = before->Parent;
+
+  if (before == root) {
+    root = after;
+  } else if (before->data < parentNode->data) {
     parentNode->LHS = after;
   } else {
     parentNode->RHS = after;
@@ -253,6 +273,24 @@ template <typename T> bool BinTree<T>::erase(T data) {
       parentNode->RHS = junctionNode;
     }
     return true;
+  }
+}
+
+template <typename T> bool BinTree<T>::eraseEx(T data) {
+  struct BinTreeNode<T> *deleteNode = searchNode(root, data);
+
+  if (deleteNode == nullNode) {
+    return false;
+  }
+
+  if (deleteNode->LHS == nullNode) {
+    ReplaceEx(deleteNode, deleteNode->RHS);
+    BalanceD(deleteNode->RHS);
+  } else {
+    struct BinTreeNode<T> *leftMaxNode = LeftMax(deleteNode);
+    deleteNode->data = leftMaxNode->data;
+    ReplaceEx(leftMaxNode, leftMaxNode->LHS);
+    BalanceD(leftMaxNode->LHS);
   }
 }
 
@@ -409,7 +447,40 @@ void BinTree<T>::BalanceI(struct BinTreeNode<T> *node) {
     // insert: when target node is LHS, erase: when objective node is RHS
     if (parentNode->LHS == targetNode) {
       if (bias(parentNode) == 2) {
-        // graph();
+
+        parentNode = bias(parentNode->LHS) >= 0 ? RotateR(parentNode)
+                                                : RotateLR(parentNode);
+      } else {
+        modHeight(parentNode);
+      }
+      // insert: when target node is RHS, erase: when objective node is LHS
+    } else {
+      if (bias(parentNode) == -2) {
+        parentNode = bias(parentNode->RHS) <= 0 ? RotateL(parentNode)
+                                                : RotateRL(parentNode);
+      } else {
+        modHeight(parentNode);
+      }
+    }
+
+    if (height == parentNode->height) {
+      break;
+    }
+
+    targetNode = parentNode;
+  }
+}
+
+template <typename T> void BinTree<T>::BalanceD(struct BinTreeNode<T> *node) {
+  struct BinTreeNode<T> *targetNode = node;
+  int height = targetNode->height;
+
+  while (targetNode->Parent != nullNode) {
+    struct BinTreeNode<T> *parentNode = targetNode->Parent;
+
+    // insert: when target node is LHS, erase: when objective node is RHS
+    if (parentNode->RHS == targetNode) {
+      if (bias(parentNode) == 2) {
 
         parentNode = bias(parentNode->LHS) >= 0 ? RotateR(parentNode)
                                                 : RotateLR(parentNode);
@@ -453,7 +524,7 @@ template <typename T> void BinTree<T>::graph() {
 
   int nullCount = 0;
 
-  while (!queue.empty()) {
+  while (!queue.empty() && root != nullNode) {
     struct BinTreeNode<T> *front = queue.front();
     queue.pop();
 
@@ -505,7 +576,7 @@ template <typename T> void BinTree<T>::graphDebug() {
 
   int nullCount = 0;
 
-  while (!queue.empty()) {
+  while (!queue.empty() && root != nullNode) {
     struct BinTreeNode<T> *front = queue.front();
     queue.pop();
 
