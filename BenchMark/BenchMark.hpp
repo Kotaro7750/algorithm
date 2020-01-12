@@ -6,7 +6,7 @@ class BenchMark {
 public:
   BenchMark();
   void Start();
-  void Stop();
+  long Stop();
   long Lap();
   long getLap(long);
   long getLapUS(long);
@@ -22,9 +22,10 @@ private:
 BenchMark::BenchMark() {}
 
 void BenchMark::Start() { startTime = std::chrono::system_clock::now(); }
-void BenchMark::Stop() {
-  Lap();
+long BenchMark::Stop() {
+  long index = Lap();
   endTime = prevLapTime;
+  return index;
 }
 
 long BenchMark::Lap() {
