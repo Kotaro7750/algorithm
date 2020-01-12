@@ -551,6 +551,10 @@ template <typename T> bool BinTree<T>::checkBin() {
 }
 
 template <typename T> bool BinTree<T>::checkAVL() {
+  if (root == nullNode) {
+    return true;
+  }
+
   std::queue<struct BinTreeNode<T> *> queue;
   queue.push(root);
 
