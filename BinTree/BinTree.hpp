@@ -8,6 +8,7 @@ template <typename T> struct BinTreeNode {
   struct BinTreeNode<T> *LHS;
   struct BinTreeNode<T> *RHS;
   int height;
+  int bias;
 };
 
 template <typename T> class BinTree {
@@ -20,6 +21,7 @@ public:
   bool append(T data);
   bool erase(T data);
   void graph();
+  void animation(std::string dir);
   void graphDebug();
   bool checkBin();
   bool checkAVL();
@@ -27,6 +29,7 @@ public:
 private:
   struct BinTreeNode<T> *root;
   struct BinTreeNode<T> *nullNode;
+  int animationCount;
 
   int bias(struct BinTreeNode<T> *node);
   void modHeight(struct BinTreeNode<T> *node);
@@ -43,6 +46,8 @@ private:
   struct BinTreeNode<T> *RotateRL(struct BinTreeNode<T> *node);
   struct BinTreeNode<T> *RotateLR(struct BinTreeNode<T> *node);
 
+  void ToDot();
+
   void BalanceA(struct BinTreeNode<T> *node);
   void BalanceE(struct BinTreeNode<T> *node);
 
@@ -57,6 +62,8 @@ template <typename T> inline BinTree<T>::BinTree() {
   nullNode->height = 0;
 
   root = nullNode;
+
+  animationCount = 0;
 }
 
 template <typename T> BinTree<T>::~BinTree<T>() {
@@ -107,9 +114,10 @@ template <typename T> inline int BinTree<T>::bias(struct BinTreeNode<T> *node) {
 
 template <typename T>
 inline void BinTree<T>::modHeight(struct BinTreeNode<T> *node) {
-  node->height =
-      1 + (node->LHS->height > node->RHS->height ? node->LHS->height
-                                                 : node->RHS->height);
+  int lHeight = node->LHS->height;
+  int rHeight = node->RHS->height;
+  node->height = 1 + (lHeight > rHeight ? lHeight : rHeight);
+  node->bias = lHeight - rHeight;
 }
 
 template <typename T>
@@ -412,52 +420,8 @@ template <typename T> void BinTree<T>::BalanceE(struct BinTreeNode<T> *node) {
 //--------------------
 
 template <typename T> void BinTree<T>::graph() {
-  std::ofstream ofs("bintree.dot");
 
-  ofs << "digraph BinTree {" << std::endl;
-  ofs << "graph [centering=\"false\",ranksep=0.2,ordering=out,nodesep=0.5];"
-      << std::endl;
-  ofs << "node [shape=circle,width = 0.2, height = 0.2, margin = "
-         "0.01];"
-      << std::endl;
-
-  std::queue<struct BinTreeNode<T> *> queue;
-  queue.push(root);
-
-  int nullCount = 0;
-
-  while (!queue.empty() && root != nullNode) {
-    struct BinTreeNode<T> *front = queue.front();
-    queue.pop();
-
-    ofs << front->data << "[label=\"" << front->data << "\"];" << std::endl;
-
-    if (front->LHS != nullNode) {
-      ofs << front->data << " -> " << front->LHS->data << ";" << std::endl;
-      queue.push(front->LHS);
-    } else {
-      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
-          << std::endl;
-      ofs << front->data << " -> "
-          << "nullNode" << nullCount << "[style=invis];" << std::endl;
-      nullCount++;
-    }
-
-    if (front->RHS != nullNode) {
-      ofs << front->data << " -> " << front->RHS->data << ";" << std::endl;
-      queue.push(front->RHS);
-    } else {
-      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
-          << std::endl;
-      ofs << front->data << " -> "
-          << "nullNode" << nullCount << "[style=invis];" << std::endl;
-      nullCount++;
-    }
-  }
-
-  ofs << "}" << std::endl;
-
-  system("dot -Kdot -Tpng bintree.dot -obintree.png");
+  ToDot();
   system("rm bintree.dot");
   system("eog bintree.png");
   system("rm bintree.png");
@@ -518,6 +482,66 @@ template <typename T> void BinTree<T>::graphDebug() {
   system("rm bintree.dot");
   system("eog bintree.png");
   system("rm bintree.png");
+}
+
+template <typename T> void BinTree<T>::ToDot() {
+  std::ofstream ofs("bintree.dot");
+
+  ofs << "digraph BinTree {" << std::endl;
+  ofs << "graph [centering=\"false\",ranksep=0.2,ordering=out,nodesep=0.5];"
+      << std::endl;
+  ofs << "node [shape=circle,width = 0.2, height = 0.2, margin = "
+         "0.01];"
+      << std::endl;
+
+  std::queue<struct BinTreeNode<T> *> queue;
+  queue.push(root);
+
+  int nullCount = 0;
+
+  while (!queue.empty() && root != nullNode) {
+    struct BinTreeNode<T> *front = queue.front();
+    queue.pop();
+
+    ofs << front->data << "[label=\"" << front->data << "\"];" << std::endl;
+
+    if (front->LHS != nullNode) {
+      ofs << front->data << " -> " << front->LHS->data << ";" << std::endl;
+      queue.push(front->LHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+
+    if (front->RHS != nullNode) {
+      ofs << front->data << " -> " << front->RHS->data << ";" << std::endl;
+      queue.push(front->RHS);
+    } else {
+      ofs << "nullNode" << nullCount << "[label=\"0\",style=invis];"
+          << std::endl;
+      ofs << front->data << " -> "
+          << "nullNode" << nullCount << "[style=invis];" << std::endl;
+      nullCount++;
+    }
+  }
+
+  ofs << "}" << std::endl;
+
+  system("dot -Kdot -Tpng bintree.dot -obintree.png");
+}
+
+template <typename T> void BinTree<T>::animation(std::string dir) {
+
+  ToDot();
+
+  std::string moveQuery =
+      "mv bintree.png " + dir + "/" + std::to_string(animationCount) + ".png";
+  system(moveQuery.c_str());
+
+  animationCount++;
 }
 
 template <typename T> bool BinTree<T>::checkBin() {

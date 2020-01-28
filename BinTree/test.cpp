@@ -25,11 +25,12 @@ bool genRand(int node_n) {
 }
 
 int main(int argc, char const *argv[]) {
-  if (argc < 2) {
+  if (argc < 1) {
     std::cout << "./a.out Node_N" << std::endl;
     exit(1);
   }
-  int node_n = atoi(argv[1]);
+  // int node_n = atoi(argv[1]);
+  int node_n = 1000000;
 
   std::cout << "node_n is " << node_n << std::endl;
 
