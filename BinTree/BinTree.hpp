@@ -174,6 +174,7 @@ template <typename T> bool BinTree<T>::append(T data) {
     newNode->LHS = nullNode;
     newNode->RHS = nullNode;
     newNode->height = 1;
+    newNode->bias = 0;
 
     root = newNode;
     return true;
@@ -201,6 +202,7 @@ template <typename T> bool BinTree<T>::append(T data) {
   newNode->LHS = nullNode;
   newNode->RHS = nullNode;
   newNode->height = 1;
+  newNode->bias = 0;
 
   if (data < parent->data) {
     parent->LHS = newNode;

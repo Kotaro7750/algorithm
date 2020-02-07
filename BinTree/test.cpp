@@ -29,8 +29,7 @@ int main(int argc, char const *argv[]) {
     std::cout << "./a.out Node_N" << std::endl;
     exit(1);
   }
-  // int node_n = atoi(argv[1]);
-  int node_n = 1000000;
+  int node_n = atoi(argv[1]);
 
   std::cout << "node_n is " << node_n << std::endl;
 
