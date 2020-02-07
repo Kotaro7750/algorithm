@@ -349,10 +349,10 @@ struct BinTreeNode<T> *BinTree<T>::RotateLR(struct BinTreeNode<T> *node) {
 template <typename T>
 void BinTree<T>::BalanceA(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *targetNode = node;
-  int height = targetNode->height;
 
   while (targetNode->Parent != nullNode) {
     struct BinTreeNode<T> *parentNode = targetNode->Parent;
+    int height = parentNode->height;
 
     // when target node is LHS
     if (parentNode->LHS == targetNode) {
@@ -383,10 +383,10 @@ void BinTree<T>::BalanceA(struct BinTreeNode<T> *node) {
 
 template <typename T> void BinTree<T>::BalanceE(struct BinTreeNode<T> *node) {
   struct BinTreeNode<T> *targetNode = node;
-  int height = targetNode->height;
 
   while (targetNode->Parent != nullNode) {
     struct BinTreeNode<T> *parentNode = targetNode->Parent;
+    int height = parentNode->height;
 
     // when objective node is RHS
     if (parentNode->RHS == targetNode) {
@@ -536,6 +536,7 @@ template <typename T> void BinTree<T>::ToDot() {
 template <typename T> void BinTree<T>::animation(std::string dir) {
 
   ToDot();
+  system("rm bintree.dot");
 
   std::string moveQuery =
       "mv bintree.png " + dir + "/" + std::to_string(animationCount) + ".png";
