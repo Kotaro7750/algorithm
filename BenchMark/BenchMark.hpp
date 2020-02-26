@@ -6,9 +6,11 @@ class BenchMark {
 public:
   BenchMark();
   void Start();
-  void Stop();
+  long Stop();
   long Lap();
   long getLap(long);
+  long getLapUS(long);
+  long getLapNS(long);
 
 private:
   std::chrono::system_clock::time_point startTime;
@@ -20,9 +22,10 @@ private:
 BenchMark::BenchMark() {}
 
 void BenchMark::Start() { startTime = std::chrono::system_clock::now(); }
-void BenchMark::Stop() {
-  Lap();
+long BenchMark::Stop() {
+  long index = Lap();
   endTime = prevLapTime;
+  return index;
 }
 
 long BenchMark::Lap() {
@@ -40,4 +43,12 @@ long BenchMark::Lap() {
 
 long BenchMark::getLap(long i) {
   return std::chrono::duration_cast<std::chrono::milliseconds>(lap[i]).count();
+}
+
+long BenchMark::getLapUS(long i) {
+  return std::chrono::duration_cast<std::chrono::microseconds>(lap[i]).count();
+}
+
+long BenchMark::getLapNS(long i) {
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(lap[i]).count();
 }
