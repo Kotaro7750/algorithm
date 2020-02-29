@@ -1,3 +1,4 @@
+//<denite-clipy>gcd:calculate gcd</denite-clipy>
 
 // a,b is positive natural number
 long long gcd(long a, long b) {
@@ -12,3 +13,8 @@ long long gcd(long a, long b) {
 
   return smaller;
 }
+
+//<denite-clipy>test:description</denite-clipy>
+
+// hogehoge
+//

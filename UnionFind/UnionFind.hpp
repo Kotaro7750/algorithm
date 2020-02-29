@@ -1,3 +1,4 @@
+//<denite-clipy>UnionFind:UnionFind class</denite-clipy>
 #include <vector>
 
 class UnionFind {
