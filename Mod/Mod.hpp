@@ -13,8 +13,3 @@ long long gcd(long a, long b) {
 
   return smaller;
 }
-
-//<denite-clipy>test:description</denite-clipy>
-
-// hogehoge
-//
